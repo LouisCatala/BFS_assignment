@@ -1,50 +1,57 @@
-import heapq
+from queue import PriorityQueue
 
-def a_star_search(graph, start, end, heuristic):
-    open_set = [(heuristic[start], start)]
+def a_star_search(graph, start, goal):
+    g_score = {start: 0}  # G(n)
+    f_score = {start: 0}  # F(n)
+    open_set = PriorityQueue()
+    open_set.put((10, 0, 0, start))  # f_score(set to 10 bc heuristic), -g_score, counter, node
     came_from = {}
-    g_costs = {start: 0}
+    counter = 0  # keep track of when nodes were added
+    step = 1  # Use to list steps for output
+    while not open_set.empty():
+        print(f"Step {step}")
+        step += 1
+        current_f_score, _, _, current = open_set.get()
 
-    while open_set:
-        print(f"Open set: {open_set}")
+        print(f"Current: {current}, f(n): {current_f_score}")  # Print current node and f_score
 
-        _, current = heapq.heappop(open_set)
-        print(f"Current path: {current}")
-        print(f"Neighbor paths: {list(graph[current].keys())}")
+        if current == goal:
+            return reconstruct_path(came_from, current), g_score[current]
 
-        if current == end:
-            path = []
-            while current:
-                path.insert(0, current)
-                current = came_from.get(current)
-            return path
-        
-        for neighbor, cost in graph[current].items():
-            tentative_g_cost = g_costs[current] + cost
-            f_cost = tentative_g_cost + heuristic[neighbor]  # Sum of real distance and heuristic
+        for neighbor in graph[current].keys():
+            tentative_g_score = g_score[current] + graph[current][neighbor]['cost']
 
-            print(f"F(n) cost to {neighbor} path: {f_cost} (G(n): {tentative_g_cost}, H(n): {heuristic[neighbor]})")
+            print(f"Chosen Neignbor: {neighbor}")   
 
-            if tentative_g_cost < g_costs.get(neighbor, float("inf")):
+            if tentative_g_score < g_score.get(neighbor, float('inf')):
                 came_from[neighbor] = current
-                g_costs[neighbor] = tentative_g_cost
-                heapq.heappush(open_set, (f_cost, neighbor))
+                g_score[neighbor] = tentative_g_score
+                f_score[neighbor] = tentative_g_score + graph[current][neighbor]['heuristic']
 
-        print("----")
+                counter += 1  # Increase counter for the next node
+                open_set.put((f_score[neighbor], -g_score[neighbor], counter, neighbor))
+
+                print(f" Neighbor Added to set: {neighbor}, f(n): {f_score[neighbor]}")  # Print node added to open set
+
+def reconstruct_path(came_from, current):
+    path = [current]
+    while current in came_from:
+        current = came_from[current]
+        path.append(current)
+    return path[::-1]
 
 graph = {
-    'S': {'A': 3, 'B': 2, 'C': 5},
-    'A': {'G': 2, 'C': 3},
-    'B': {'A': 4, 'D': 6},
-    'C': {'B': 4, 'H': 3},
-    'D': {'E': 2, 'F': 3},
-    'E': {'F': 5},
-    'F': {},
-    'G': {'D': 4, 'E': 5},
-    'H': {'A': 4, 'D': 4}
+    'S': {'A': {'cost': 3, 'heuristic': 8}, 'B': {'cost': 2, 'heuristic': 9}, 'C': {'cost': 5, 'heuristic': 7}},
+    'A': {'G': {'cost': 2, 'heuristic': 6}},
+    'B': {'D': {'cost': 6, 'heuristic': 4}},
+    'C': {'H': {'cost': 3, 'heuristic': 6}},
+    'D': {'F': {'cost': 3, 'heuristic': 0}},
+    'G': {'E': {'cost': 5, 'heuristic': 3}},
+    'E': {'F': {'cost': 1, 'heuristic': 0}},
+    'H': {'F': {'cost': 2, 'heuristic': 0}}
 }
 
-heuristic = {'S': 10, 'A': 8, 'B': 9, 'C': 7, 'D': 4, 'E': 3, 'F': 0, 'G': 6, 'H': 6}
-
-result = a_star_search(graph, 'S', 'F', heuristic)
-print(f"The shortest path is {result}")
+if __name__ == "__main__":
+    path, cost = a_star_search(graph, 'S', 'F')
+    print(f"The shortest path is {path}")
+    print(f"The actual cost is {cost} units.")
