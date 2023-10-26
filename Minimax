@@ -1,0 +1,36 @@
+def minimax(node, depth, isMax, indent=""): #indent parameter created to show the layer, ---- for the 2nd max watch from top to bottom -- for min  
+
+    if not isinstance(node[0], list):
+        print(indent + f"choosing from leaf nodes: {node}")
+        if isMax:
+            print(indent + f"MAX chosen {max(node)} from {node}")
+        return max(node) if isMax else min(node)
+
+    chosen_node = []
+    for child in node:
+        chosen = minimax(child, depth - 1, not isMax, indent + "--")
+        chosen_node.append(chosen)
+
+    if isMax:
+        decision = max(chosen_node)
+        print(indent + f"MAX chooses {decision} from {chosen_node}")
+        return decision
+    else:
+        decision = min(chosen_node)
+        print(indent + f"MIN chooses {decision} from {chosen_node}")
+        return decision
+
+tree = [
+    [
+        [3, 5],
+        [17, 8]
+    ],
+    [
+        [-2, 5],
+        [-1, 7]
+    ]
+]
+
+print("Starting minimax choices...\n")
+result = minimax(tree, len(tree), True)
+print(f"\nMax Value chosen at the end is: {result}")
