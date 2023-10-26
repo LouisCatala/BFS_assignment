@@ -1,4 +1,4 @@
-def minimax(node, depth, isMax, indent=""): #indent parameter created to show the layer, ---- for the 2nd max watch from top to bottom -- for min  
+def minimax(node, depth, isMax, indent=""): #indent parameter created to show the amount of nodes in layer, ---- for the 2nd max watch from top to bottom -- for min  
 
     if not isinstance(node[0], list):
         print(indent + f"choosing from leaf nodes: {node}")
