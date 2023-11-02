@@ -3,7 +3,7 @@ import math
 MAX, MIN = float('inf'), float('-inf')
 print ("(L1 means left child, L2 means right child)")
 
-def minimax(depth, nodeIndex, maximizingPlayer, values, alpha, beta, branch_path=[]):
+def minimax(depth, nodeIndex, maximizingPlayer, values, alpha, beta, branch_path=[]): #branch path created to handle the print statement.
 
     levels = int(math.log2(len(values)))
 
