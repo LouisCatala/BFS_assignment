@@ -1,0 +1,41 @@
+#https://www.kaggle.com/datasets/aryashah2k/credit-card-customer-data
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+# Load the dataset
+customer_data = pd.read_csv(r'C:\Users\13473\Downloads\Credit Card Customer Data.csv')
+
+# Elbow Method to find the optimum number of clusters
+sse = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(customer_data[['Avg_Credit_Limit', 'Total_Credit_Cards', 'Total_visits_bank', 'Total_visits_online', 'Total_calls_made']])
+    sse.append(kmeans.inertia_)
+print(f"The KMeans algorithm converged in {kmeans.n_iter_} iterations")
+
+# Plotting the Elbow graph
+plt.figure(figsize=(10, 5))
+plt.plot(range(1, 11), sse)
+plt.xlabel('Number of Clusters')
+plt.ylabel('SSE')
+plt.title('Elbow Method')
+plt.show()
+
+# Building the KMeans clustering model with the chosen number of clusters
+optimal_clusters = 3
+kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
+kmeans.fit(customer_data[['Avg_Credit_Limit', 'Total_Credit_Cards', 'Total_visits_bank', 'Total_visits_online', 'Total_calls_made']])
+
+#Find the cluster center
+centers = pd.DataFrame(kmeans.cluster_centers_)
+centers.columns = ['Avg_Credit_Limit', 'Total_Credit_Cards', 'Total_visits_bank', 'Total_visits_online', 'Total_calls_made']
+print(centers)
+#Plot the cluster center with data points
+plt.figure(figsize=(10, 5))
+plt.scatter(customer_data['Total_visits_online'], customer_data['Avg_Credit_Limit'], c=kmeans.labels_)
+plt.scatter(centers['Total_visits_online'], centers['Avg_Credit_Limit'], c='red', marker='x')  
+plt.title('Customer Segments')
+plt.xlabel('Total Visits Online')
+plt.ylabel('Average Credit Limit')
+plt.show()
