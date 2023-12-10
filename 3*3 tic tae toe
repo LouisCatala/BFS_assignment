@@ -1,0 +1,196 @@
+from math import inf as infinity
+from random import choice
+import platform
+import time
+from os import system
+
+COMP1 = +1
+COMP2 = -1
+board = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+]
+
+
+def evaluate(state):
+    if wins(state, COMP1):
+        score = +1
+    elif wins(state, COMP2):
+        score = -1
+    else:
+        score = 0
+
+    return score
+
+
+def wins(state, player):
+    #:return: True if the player wins
+    win_state = [
+        [state[0][0], state[0][1], state[0][2]],
+        [state[1][0], state[1][1], state[1][2]],
+        [state[2][0], state[2][1], state[2][2]],
+        [state[0][0], state[1][0], state[2][0]],
+        [state[0][1], state[1][1], state[2][1]],
+        [state[0][2], state[1][2], state[2][2]],
+        [state[0][0], state[1][1], state[2][2]],
+        [state[2][0], state[1][1], state[0][2]],
+    ]
+    if [player, player, player] in win_state:
+        return True
+    else:
+        return False
+
+
+def game_over(state):
+    return wins(state, COMP1) or wins(state, COMP2)
+
+
+
+def empty_cells(state):
+    #return: a list of empty cells
+    cells = []
+
+    for x, row in enumerate(state):
+        for y, cell in enumerate(row):
+            if cell == 0:
+                cells.append([x, y])
+
+    return cells
+
+
+def valid_move(x, y):
+    #A move is valid if the chosen cell is empty
+    #return: True if the board[x][y] is empty
+    if [x, y] in empty_cells(board):
+        return True
+    else:
+        return False
+
+
+def set_move(x, y, player):
+    #Set the move on board, if the coordinates are valid
+    if valid_move(x, y):
+        board[x][y] = player
+        return True
+    else:
+        return False
+
+
+def minimax(state, depth, player):
+    if player == COMP1:
+        best = [-1, -1, -infinity]
+    else:
+        best = [-1, -1, +infinity]
+
+    if depth == 0 or game_over(state):
+        score = evaluate(state)
+        return [-1, -1, score]
+
+    for cell in empty_cells(state):
+        x, y = cell[0], cell[1]
+        state[x][y] = player
+        score = minimax(state, depth - 1, -player)
+        state[x][y] = 0
+        score[0], score[1] = x, y
+
+        if player == COMP1:
+            if score[2] > best[2]:
+                best = score  # max value
+        else:
+            if score[2] < best[2]:
+                best = score  # min value
+
+    return best
+
+
+def clean():
+    #clear the console
+    os_name = platform.system().lower()
+    if 'windows' in os_name:
+        system('cls')
+    else:
+        system('clear')
+
+
+def render(state, c_choice, h_choice):
+    #Print the board on console
+
+    chars = {
+        -1: h_choice,
+        +1: c_choice,
+        0: ' '
+    }
+    str_line = '---------------'
+
+    print('\n' + str_line)
+    for row in state:
+        for cell in row:
+            symbol = chars[cell]
+            print(f'| {symbol} |', end='')
+        print('\n' + str_line)
+
+
+def ai_turn(player, c_choice, h_choice):
+    depth = len(empty_cells(board))
+    if depth == 0 or game_over(board):
+        return
+
+    clean()
+    print(f'Computer turn [{c_choice if player == COMP1 else h_choice}]')
+    render(board, c_choice, h_choice)
+
+    if depth == 9:
+        x = choice([0, 1, 2])
+        y = choice([0, 1, 2])
+    else:
+        move = minimax(board, depth, player)
+        x, y = move[0], move[1]
+
+    set_move(x, y, player)
+    time.sleep(1)
+
+def comp_turn(player, c_choice, h_choice):
+    depth = len(empty_cells(board))
+    if depth == 0 or game_over(board):
+        return
+
+    clean()
+    print(f'Computer turn [{c_choice if player == COMP1 else h_choice}]')
+    render(board, c_choice, h_choice)
+
+    if depth == 9:
+        x, y = choice([(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)])
+    else:
+        move = minimax(board, depth, player)
+        x, y = move[0], move[1]
+
+    set_move(x, y, player)
+    time.sleep(1)
+
+def main():
+    clean()
+    c_choice = 'X'
+    h_choice = 'O'
+
+    while len(empty_cells(board)) > 0 and not game_over(board):
+        comp_turn(COMP1, c_choice, h_choice)
+        comp_turn(COMP2, h_choice, c_choice)
+
+    if wins(board, COMP1):
+        clean()
+        render(board, c_choice, h_choice)
+        print('COMP1 WINS!')
+    elif wins(board, COMP2):
+        clean()
+        render(board, h_choice, c_choice)
+        print('COMP2 WINS!')
+    else:
+        clean()
+        render(board, c_choice, h_choice)
+        print('DRAW!')
+
+    exit()
+
+if __name__ == '__main__':
+    main()
